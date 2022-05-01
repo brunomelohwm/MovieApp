@@ -1,95 +1,70 @@
 import 'package:flutter/material.dart';
-import '../models/movie.dart';
+import 'package:movies_app/utils/text.dart';
+import 'package:tmdb_api/tmdb_api.dart';
+import '../models/trending.dart';
 import 'home_controller.dart';
 
 class HomePage extends StatefulWidget {
-  HomePage({Key? key}) : super(key: key);
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
+  List trendingmovies = [];
+  List topratedmovies = [];
+  List tv = [];
+
+  final String apikey = '1f0eff93de7c467191931ae3861e556b';
+  final readaccestoken =
+      'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxZjBlZmY5M2RlN2M0NjcxOTE5MzFhZTM4NjFlNTU2YiIsInN1YiI6IjYyNjg2NGQyMWY5OGQxMDA5YWQ4OTIwOSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.Ifq8ly9pb1cnIPRCWkNIwuGQcLpiOcbFhWZyjuWgYCk7';
+
+  @override
+  void initState() {
+    loadmovies();
+    super.initState();
+  }
+
+  loadmovies() async {
+    TMDB tmdbWithCustomLogs = TMDB(ApiKeys(apikey, readaccestoken),
+        logConfig: const ConfigLogger(
+          showLogs: true,
+          showErrorLogs: true,
+        ));
+    Map trendingresult = await tmdbWithCustomLogs.v3.trending.getTrending();
+    Map topratedresult = await tmdbWithCustomLogs.v3.movies.getTopRated();
+    Map tvresult = await tmdbWithCustomLogs.v3.tv.getPopular();
+
+    setState(() {
+      trendingmovies = trendingresult['results'];
+      topratedmovies = topratedresult['results'];
+      tv = tvresult['results'];
+    });
+    // ignore: avoid_print
+    print(trendingmovies);
+  }
+
   @override
   Widget build(BuildContext context) {
     var controller = HomeController();
     controller.tabela = controller.getList();
 
-    //print(controller.tabela);
-
     return Scaffold(
-      body: Stack(
+      appBar: AppBar(
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        title: const ModText(
+          text: 'Flutter Movie App',
+          color: Colors.black,
+          size: 18,
+        ),
+      ),
+      body: ListView(
         children: [
-          Positioned(
-            top: 110,
-            right: 220,
-            child: Text(
-              'Os Mais Populares',
-              style: TextStyle(
-                fontSize: 18,
-                color: Color.fromARGB(244, 0, 0, 0),
-              ),
-            ),
-          ),
-          //Text('Os Mais Populares'),
-          Positioned(
-            width: 110,
-            top: 140,
-            right: 20,
-            child: Image.network(
-                'https://www.themoviedb.org/t/p/w600_and_h900_bestv2/3rieja2Lwo5vW7jP9fYEGuRuYPu.jpg'),
-          ),
-          Positioned(
-            width: 110,
-            top: 140,
-            left: 20,
-            child: Image.network(
-                'https://www.themoviedb.org/t/p/w600_and_h900_bestv2/cg93jYwHiDVkesAkllPfeiO6brm.jpg'),
-          ),
-          Positioned(
-            width: 110,
-            top: 140,
-            left: 140,
-            child: Image.network(
-                'https://www.themoviedb.org/t/p/w600_and_h900_bestv2/dSrD6Tkn4UgW7slML7wDYZlu9kA.jpg'),
-          ),
-          Positioned(
-            bottom: 110,
-            right: 220,
-            height: 210,
-            child: Text(
-              'Grátis Para Assistir',
-              style: TextStyle(
-                fontSize: 18,
-                color: Color.fromARGB(244, 0, 0, 0),
-              ),
-            ),
-          ),
-          Positioned(
-            width: 110,
-            bottom: 120,
-            left: 20,
-            child: Image.network(
-                'https://www.themoviedb.org/t/p/w600_and_h900_bestv2/hdkEJ3lYF89WSDNF6iC69E2MoJr.jpg'),
-          ),
-          Positioned(
-            width: 110,
-            bottom: 120,
-            right: 140,
-            child: Image.network(
-                'https://www.themoviedb.org/t/p/w600_and_h900_bestv2/wd7b4Nv9QBHDTIjc2m7sr0IUMoh.jpg'),
-          ),
-          Positioned(
-            width: 110,
-            bottom: 120,
-            right: 20,
-            child: Image.network(
-                'https://www.themoviedb.org/t/p/w600_and_h900_bestv2/jqCR5YCEDgBMEHjcMdkfh2zha6N.jpg'),
-          ),
+          TrendingMovies(trending: trendingmovies),
         ],
       ),
     );
-
-    // child: Image.network(tabela[i].posterPath!),
   }
 }

@@ -1,7 +1,7 @@
 import '../models/movie.dart';
 
 class HomeController {
-  late List<Movie> tabela;
+  List tabela = [];
 
   List<Movie> getList() {
     final tabela = [

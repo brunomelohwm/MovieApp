@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:movies_app/utils/text.dart';
 import 'package:tmdb_api/tmdb_api.dart';
-import '../models/trending.dart';
-import 'home_controller.dart';
+import 'package:movies_app/models/widgets/popular.dart';
+import '../models/widgets/now_playing.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -12,9 +12,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List trendingmovies = [];
-  List topratedmovies = [];
-  List tv = [];
+  List popularityMovies = [];
+  List nowPlayingMovies = [];
+  // List tv = [];
 
   final String apikey = '1f0eff93de7c467191931ae3861e556b';
   final readaccestoken =
@@ -32,24 +32,20 @@ class _HomePageState extends State<HomePage> {
           showLogs: true,
           showErrorLogs: true,
         ));
-    Map trendingresult = await tmdbWithCustomLogs.v3.trending.getTrending();
-    Map topratedresult = await tmdbWithCustomLogs.v3.movies.getTopRated();
-    Map tvresult = await tmdbWithCustomLogs.v3.tv.getPopular();
+    Map popularityResult = await tmdbWithCustomLogs.v3.movies.getPopular();
+    Map nowPlayingResult = await tmdbWithCustomLogs.v3.movies.getNowPlaying();
+    //Map tvresult = await tmdbWithCustomLogs.v3.tv.getPopular();
 
     setState(() {
-      trendingmovies = trendingresult['results'];
-      topratedmovies = topratedresult['results'];
-      tv = tvresult['results'];
+      popularityMovies = popularityResult['results'];
+      nowPlayingMovies = nowPlayingResult['results'];
     });
     // ignore: avoid_print
-    print(trendingmovies);
+    print(nowPlayingResult);
   }
 
   @override
   Widget build(BuildContext context) {
-    var controller = HomeController();
-    controller.tabela = controller.getList();
-
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -62,7 +58,8 @@ class _HomePageState extends State<HomePage> {
       ),
       body: ListView(
         children: [
-          TrendingMovies(trending: trendingmovies),
+          Popularity(popularity: popularityMovies),
+          NowPlayingMovies(nowPlaying: nowPlayingMovies),
         ],
       ),
     );

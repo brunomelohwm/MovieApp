@@ -1,66 +1,91 @@
 import 'package:flutter/material.dart';
-import 'package:movies_app/utils/text.dart';
-import 'package:tmdb_api/tmdb_api.dart';
-import 'package:movies_app/models/widgets/popular.dart';
-import '../models/widgets/now_playing.dart';
+import 'package:movies_app/data_source/fetch_movies_datasource.dart';
+import 'package:movies_app/pages/widgets/card_movie_widget.dart';
+
+import '../models/movie_model.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  List popularityMovies = [];
-  List nowPlayingMovies = [];
-  // List tv = [];
-
-  final String apikey = '1f0eff93de7c467191931ae3861e556b';
-  final readaccestoken =
-      'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxZjBlZmY5M2RlN2M0NjcxOTE5MzFhZTM4NjFlNTU2YiIsInN1YiI6IjYyNjg2NGQyMWY5OGQxMDA5YWQ4OTIwOSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.Ifq8ly9pb1cnIPRCWkNIwuGQcLpiOcbFhWZyjuWgYCk7';
-
-  @override
-  void initState() {
-    loadmovies();
-    super.initState();
-  }
-
-  loadmovies() async {
-    TMDB tmdbWithCustomLogs = TMDB(ApiKeys(apikey, readaccestoken),
-        logConfig: const ConfigLogger(
-          showLogs: true,
-          showErrorLogs: true,
-        ));
-    Map popularityResult = await tmdbWithCustomLogs.v3.movies.getPopular();
-    Map nowPlayingResult = await tmdbWithCustomLogs.v3.movies.getNowPlaying();
-    //Map tvresult = await tmdbWithCustomLogs.v3.tv.getPopular();
-
-    setState(() {
-      popularityMovies = popularityResult['results'];
-      nowPlayingMovies = nowPlayingResult['results'];
-    });
-    // ignore: avoid_print
-    print(nowPlayingResult);
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        title: const ModText(
-          text: 'Flutter Movie App',
-          color: Colors.black,
-          size: 18,
+    return Material(
+      child: SingleChildScrollView(
+        child: Container(
+          margin: const EdgeInsets.only(left: 5, top: 50),
+          child: SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.only(
+                    left: 10,
+                  ),
+                  child: const Text(
+                    'Os Mais Populares',
+                    textAlign: TextAlign.left,
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
+                ),
+                FutureBuilder<List<MovieModel>>(
+                  future: FetchMoviesDataSource.getMoviesPopular(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      return SizedBox(
+                        height: 280,
+                        width: double.infinity,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: snapshot.data!.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            final movie = snapshot.data![index];
+                            return CardMovieWidget(movie: movie);
+                          },
+                        ),
+                      );
+                    }
+                    if (snapshot.hasError) {}
+                    return const CircularProgressIndicator();
+                  },
+                ),
+                Container(
+                  padding: const EdgeInsets.only(left: 10, bottom: 10),
+                  child: const Text(
+                    'Grátis Para Assistir',
+                    textAlign: TextAlign.left,
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
+                ),
+                FutureBuilder<List<MovieModel>>(
+                  future: FetchMoviesDataSource.getMoviesFreeToWatch(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      return SizedBox(
+                        height: 280,
+                        width: double.infinity,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: snapshot.data!.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            final movie = snapshot.data![index];
+                            return CardMovieWidget(movie: movie);
+                          },
+                        ),
+                      );
+                    }
+                    if (snapshot.hasError) {}
+                    return const CircularProgressIndicator();
+                  },
+                ),
+              ],
+            ),
+          ),
         ),
-      ),
-      body: ListView(
-        children: [
-          Popularity(popularity: popularityMovies),
-          NowPlayingMovies(nowPlaying: nowPlayingMovies),
-        ],
       ),
     );
   }

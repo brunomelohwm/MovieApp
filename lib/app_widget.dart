@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'pages/home_page.dart';
-import 'package:intl/intl.dart';
 
 class MovieApp extends StatelessWidget {
   const MovieApp({Key? key}) : super(key: key);
